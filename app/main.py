@@ -1,9 +1,10 @@
+import asyncio
 from fastapi import FastAPI, Request, Depends, HTTPException
 from starlette.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from .db import Base, engine, SessionLocal
-from .models import Url
+from .models import Url, Visit
 
 app = FastAPI()
 
@@ -50,6 +51,7 @@ async def redirect_url(shortcode: str, db: Session = Depends(get_db)):
     existing_url = Url.get_url_by_shortcode(db, shortcode)
 
     if existing_url:
+        asyncio.create_task(Visit.create_visit(db, existing_url))
         return RedirectResponse(existing_url.url)
     else:
         raise HTTPException(

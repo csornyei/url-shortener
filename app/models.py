@@ -1,8 +1,8 @@
 import string
 import random
 
-from sqlalchemy import Column, Integer, String, DateTime, func
-from sqlalchemy.orm import Session
+from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey
+from sqlalchemy.orm import Session, relationship
 
 from .db import Base
 
@@ -14,6 +14,8 @@ class Url(Base):
     url = Column(String, unique=True)
     shortcode = Column(String, unique=True)
     created_at = Column(DateTime, default=func.now())
+
+    visits = relationship('Visit', back_populates='url')
 
     @classmethod
     def create_url(cls, db: Session, original_url: str, shortcode: str):
@@ -45,3 +47,19 @@ class Url(Base):
             if existing_url is None:
                 unique_shortcode = True
         return cls.create_url(db, original_url, shortcode)
+
+
+class Visit(Base):
+    __tablename__ = 'visits'
+
+    id = Column(Integer, primary_key=True)
+    url_id = Column(Integer, ForeignKey('urls.id'), nullable=False)
+    created_at = Column(DateTime, default=func.now())
+
+    url = relationship('Url', back_populates='visits')
+
+    @classmethod
+    async def create_visit(cls, db: Session, url: Url):
+        visit = cls(url=url)
+        db.add(visit)
+        db.commit()
