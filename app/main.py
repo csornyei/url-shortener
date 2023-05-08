@@ -38,10 +38,12 @@ async def shorten_url(req: Request, db: Session = Depends(get_db)):
         existing_url = Url.get_url_by_original_url(db, body["url"])
 
         if existing_url:
-            return RedirectResponse(f"/urls/{existing_url.shortcode}", status_code=303)
+            return RedirectResponse(f"/urls/{existing_url.shortcode}",
+                                    status_code=303)
         else:
             raise HTTPException(
-                status_code=500, detail="An error occured while creating the URL")
+                status_code=500,
+                detail="An error occured while creating the URL")
 
     return {"location": f"/urls/{new_url.shortcode}"}
 
@@ -53,6 +55,21 @@ async def redirect_url(shortcode: str, db: Session = Depends(get_db)):
     if existing_url:
         asyncio.create_task(Visit.create_visit(db, existing_url))
         return RedirectResponse(existing_url.url)
+    else:
+        raise HTTPException(
+            status_code=404, detail="There is no url with this shortcode")
+
+
+@app.get("/urls/{shortcode}/stats")
+async def url_stats(shortcode: str, db: Session = Depends(get_db)):
+    url = Url.get_url_with_stats(db, shortcode)
+
+    if url:
+        return {
+            "url": url.url,
+            "created_at": url.created_at,
+            "hits": len(url.visits)
+        }
     else:
         raise HTTPException(
             status_code=404, detail="There is no url with this shortcode")

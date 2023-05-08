@@ -2,7 +2,7 @@ import string
 import random
 
 from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import Session, relationship, joinedload
 
 from .db import Base
 
@@ -47,6 +47,16 @@ class Url(Base):
             if existing_url is None:
                 unique_shortcode = True
         return cls.create_url(db, original_url, shortcode)
+
+    @classmethod
+    def get_url_with_stats(cls, db: Session, shortcode: str):
+        url = (
+            db.query(cls)
+            .options(joinedload(cls.visits))
+            .filter(cls.shortcode == shortcode)
+            .first()
+        )
+        return url
 
 
 class Visit(Base):
