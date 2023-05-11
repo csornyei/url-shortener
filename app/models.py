@@ -73,3 +73,11 @@ class Visit(Base):
         visit = cls(url=url)
         db.add(visit)
         db.commit()
+
+    @classmethod
+    async def create_visit_shortcode(cls, db: Session, shortcode: str):
+        url = Url.get_url_by_shortcode(db, shortcode)
+        if url:
+            visit = cls(url=url)
+            db.add(visit)
+            db.commit()
