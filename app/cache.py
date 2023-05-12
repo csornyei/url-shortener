@@ -16,7 +16,10 @@ class Cache:
         self.client.expire(shortcode, DAY)
 
     def retrieve_url(self, shortcode: str):
-        return self.client.get(shortcode)
+        value = self.client.get(shortcode)
+        if value:
+            return value.decode("utf-8")
+        return None
 
 client = redis.Redis(host=os.getenv("REDIS_HOST"),
                      port=os.getenv("REDIS_PORT"))

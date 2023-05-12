@@ -34,7 +34,9 @@ def home(req: Request):
 
 
 @app.post("/shorten", status_code=201)
-async def shorten_url(req: Request, db: Session = Depends(get_db), cache: Cache = Depends(get_cache)):
+async def shorten_url(req: Request, 
+                      db: Session = Depends(get_db), 
+                      cache: Cache = Depends(get_cache)):
     body = await req.json()
 
     if "url" not in body:
@@ -59,7 +61,9 @@ async def shorten_url(req: Request, db: Session = Depends(get_db), cache: Cache 
 
 
 @app.get("/urls/{shortcode}")
-async def redirect_url(shortcode: str, db: Session = Depends(get_db), cache: Cache = Depends(get_cache)):
+async def redirect_url(shortcode: str, 
+                       db: Session = Depends(get_db), 
+                       cache: Cache = Depends(get_cache)):
     existing_url = cache.retrieve_url(shortcode)
     if existing_url:
         asyncio.create_task(Visit.create_visit_shortcode(db, shortcode))
